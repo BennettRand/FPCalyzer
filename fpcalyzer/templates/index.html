@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>FPCalyzer</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+            integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+            crossorigin="anonymous"></script>
+    </head>
+    <body class="p-4 bg-light">
+        <div class="container">
+            <h2 class="mb-4">FPCalyzer</h2>
+
+            <!-- Base URL Input -->
+            <div class="mb-4">
+                <label for="baseUrl" class="form-label">FPC Profile Link</label>
+                <div class="input-group">
+                    <span class="input-group-text" id="basic-addon3">https://www.fountainpencompanion.com/users/</span>
+                    <input type="text" class="form-control" id="baseUrl" aria-describedby="basic-addon3 basic-addon4" placeholder="88685">
+                </div>
+            </div>
+
+            <!-- Accordion of Forms -->
+            <div class="accordion" id="formAccordion">
+
+            <!-- Form 1 -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                    Auto-Analyze
+                </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#formAccordion">
+                <div class="accordion-body">
+                    <form class="url-form" name="analyze">
+                    <div class="mb-3">
+                        <label class="form-label">Algorithm</label>
+                        <select class="form-select" aria-label="Algorithm Selection" name="method" id="cluster_method">
+                            <option selected value="kmeans">K-Means (consistent, predictable)</option>
+                            <option value="spectral">Spectral (more hue-accurate)</option>
+                            <option value="agglom">Agglomerative (more hue-accurate, larger categories)</option>
+                            <option value="dbscan">DBSCAN (very hue-accurate, won't categorize everything)</option>
+                            <option value="hdbscan">HDBSCAN (very hue-accurate, won't categorize everything)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="max_clusters" class="form-label">Maximum Clusters</label>
+                        <input type="range" class="form-range" min="2" max="500" step="1" value="300" id="max_clusters" name="max_clusters">
+                        <output for="max_clusters" id="max_clusters_value" aria-hidden="true"></output>
+                    </div>
+                    <div class="mb-3">
+                        <label for="delta_e_max" class="form-label">Maximum Delta E</label>
+                        <input type="range" class="form-range" min="2" max="50" step="0.1" value="25.0" id="delta_e_max" name="delta_e_max">
+                        <output for="max_clusters" id="delta_e_max_value" aria-hidden="true"></output>
+                    </div>
+                    <div class="mb-3">
+                        <label for="score_max" class="form-label">Score Max</label>
+                        <input type="range" class="form-range" min="0.1" max="0.5" step="0.01" value="0.25" id="score_max" name="score_max">
+                        <output for="score_max" id="score_max_value" aria-hidden="true"></output>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Clusters</label>
+                        <input type="text" name="clusters" id="clusters" class="form-control" placeholder="Will override Max Clusters and Max Delta E" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="score_max" class="form-label">Cluster Size Limits</label>
+                        <div class="input-group">
+                            <span class="input-group-text">Min</span>
+                            <input type="text" class="form-control" value="7" aria-label="Cluster Size Min" name="min_size" id="cluster_min_size">
+                            <span class="input-group-text">Max</span>
+                            <input type="text" class="form-control" value="100" aria-label="Cluster Size Max" name="max_size" id="cluster_max_size">
+                        </div>
+                    </div>
+                    <script>
+                    document.getElementById('max_clusters_value').textContent = document.getElementById('max_clusters').value;
+                    document.getElementById('max_clusters').addEventListener('input', function() {
+                        document.getElementById('max_clusters_value').textContent = this.value;
+                    });
+                    document.getElementById('delta_e_max_value').textContent = document.getElementById('delta_e_max').value;
+                    document.getElementById('delta_e_max').addEventListener('input', function() {
+                        document.getElementById('delta_e_max_value').textContent = this.value;
+                    });
+                    document.getElementById('score_max_value').textContent = document.getElementById('score_max').value;
+                    document.getElementById('score_max').addEventListener('input', function() {
+                        document.getElementById('score_max_value').textContent = this.value;
+                    });
+
+                    function updateInputs() {
+                        const selected = document.getElementById('cluster_method').value;
+                        if (selected === 'kmeans') {
+                            document.getElementById('max_clusters').disabled = false;
+                            document.getElementById('delta_e_max').disabled = false;
+                            document.getElementById('delta_e_max').value = "25.0";
+                            document.getElementById('delta_e_max').max = "50.0";
+                            document.getElementById('delta_e_max_value').textContent = "25.0";
+                            document.getElementById('clusters').disabled = false;
+                            document.getElementById('score_max').disabled = true;
+                            document.getElementById('cluster_min_size').disabled = true;
+                            document.getElementById('cluster_max_size').disabled = true;
+                        } else if (selected === 'spectral') {
+                            document.getElementById('max_clusters').disabled = false;
+                            document.getElementById('delta_e_max').disabled = true;
+                            document.getElementById('clusters').disabled = false;
+                            document.getElementById('score_max').disabled = false;
+                            document.getElementById('score_max').value = "0.25";
+                            document.getElementById('score_max_value').textContent = "0.25";
+                            document.getElementById('cluster_min_size').disabled = true;
+                            document.getElementById('cluster_max_size').disabled = true;
+                        } else if (selected === 'agglom') {
+                            document.getElementById('max_clusters').disabled = false;
+                            document.getElementById('delta_e_max').disabled = true;
+                            document.getElementById('clusters').disabled = false;
+                            document.getElementById('score_max').disabled = false;
+                            document.getElementById('score_max').value = "0.15";
+                            document.getElementById('score_max_value').textContent = "0.15";
+                            document.getElementById('cluster_min_size').disabled = true;
+                            document.getElementById('cluster_max_size').disabled = true;
+                        } else if (selected === 'hdbscan') {
+                            document.getElementById('max_clusters').disabled = true;
+                            document.getElementById('delta_e_max').disabled = true;
+                            document.getElementById('clusters').disabled = true;
+                            document.getElementById('score_max').disabled = true;
+                            document.getElementById('cluster_min_size').disabled = false;
+                            document.getElementById('cluster_max_size').disabled = false;
+                        } else if (selected === 'dbscan') {
+                            document.getElementById('max_clusters').disabled = true;
+                            document.getElementById('delta_e_max').disabled = false;
+                            document.getElementById('delta_e_max').value = "4.0";
+                            document.getElementById('delta_e_max').max = "10.0";
+                            document.getElementById('delta_e_max_value').textContent = "4.0";
+                            document.getElementById('clusters').disabled = true;
+                            document.getElementById('score_max').disabled = true;
+                            document.getElementById('cluster_min_size').disabled = false;
+                            document.getElementById('cluster_max_size').disabled = true;
+                        }
+                    }
+
+                    document.getElementById('cluster_method').addEventListener('change', updateInputs);
+                    updateInputs();
+
+                    </script>
+                    <button type="submit" class="btn btn-primary">Go</button>
+                    </form>
+                </div>
+                </div>
+            </div>
+
+            <!-- Form 2 -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingTwo">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                    Ink Flower
+                </button>
+                </h2>
+                <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+                <div class="accordion-body">
+                    <form class="url-form" name="tsne">
+                        <button type="submit" class="btn btn-primary">Go</button>
+                    </form>
+                </div>
+                </div>
+            </div>
+
+            <!-- Form 3 -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingThree">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                    Search
+                </button>
+                </h2>
+                <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+                <div class="accordion-body">
+                    <form class="url-form" name="taupe-me">
+                    <div class="mb-3">
+                        <label class="form-label">Color Search Term</label>
+                        <input type="text" name="color_name" class="form-control" value="Taupe">
+                    </div>
+                    <div class="mb-3">
+                        <label for="delta_e_max" class="form-label">Maximum Delta E</label>
+                        <input type="range" class="form-range" min="2" max="25" step="0.1" value="5.0" id="delta_e_max2" name="delta_e_max">
+                        <output for="max_clusters" id="delta_e_max_value2" aria-hidden="true"></output>
+                    </div>
+                    <script>
+                    document.getElementById('delta_e_max_value2').textContent = document.getElementById('delta_e_max2').value;
+                    document.getElementById('delta_e_max2').addEventListener('input', function() {
+                        document.getElementById('delta_e_max_value2').textContent = this.value;
+                    });
+                    </script>
+                    <button type="submit" class="btn btn-primary">Go</button>
+                    </form>
+                </div>
+                </div>
+            </div>
+
+            <!-- Form 4 -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingFour">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                    Ben's Categories
+                </button>
+                </h2>
+                <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+                <div class="accordion-body">
+                    <form class="url-form" name="bens-colors">
+                    <button type="submit" class="btn btn-primary">Go</button>
+                    </form>
+                </div>
+                </div>
+            </div>
+
+            </div>
+        </div>
+        <div class="modal fade" id="thinkingModal" tabindex="-1" aria-labelledby="thinkingModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content text-center">
+                <div class="modal-body">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h5 id="thinkingModalLabel">Thinking…</h5>
+                </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            const inkPuns = [
+                "Cleaning out the shimmer...",
+                "Spilling Baystate Blue...",
+                "Inking...",
+                "Waiting for the ink to dry...",
+                "Considering another TWSBI Eco...",
+                "Replacing \"Narwhal\" with \"Nahvalur\"...",
+                "Counting unused notebooks...",
+                "Gazing longingly at limited editions...",
+                "Swatching one hundred shades of blue...",
+                "Buying five more ink samples..."
+            ];
+            function getRandomInkPhrase() {
+                const index = Math.floor(Math.random() * inkPuns.length);
+                return inkPuns[index];
+            }
+            document.querySelectorAll('.url-form').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                thinkingModal = new bootstrap.Modal(document.getElementById('thinkingModal'));
+                e.preventDefault();
+                const baseUrl = document.getElementById('baseUrl').value.trim();
+                if (!baseUrl) {
+                alert("Please enter FPC user ID.");
+                return;
+                }
+
+                const formData = new FormData(form);
+                const params = new URLSearchParams();
+
+                for (const [key, value] of formData.entries()) {
+                if (value) {
+                    params.append(key, value);
+                }
+                }
+
+                const finalUrl = `${window.location.protocol}//${window.location.host}/${e.srcElement.name}/${baseUrl}?${params.toString()}`;
+                window.location.href = finalUrl;
+                document.getElementById('thinkingModalLabel').textContent = getRandomInkPhrase();
+                thinkingModal.show();
+                window.addEventListener('pageshow', () => {
+                    window.setTimeout(() => {
+                        thinkingModal.hide();
+                    }, 100);
+                });
+            });
+            });
+        </script>
+        </body>
+
+</html>
