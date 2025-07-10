@@ -1,3 +1,4 @@
+import logging
 from functools import lru_cache
 from pathlib import Path
 
@@ -8,7 +9,8 @@ from sklearn.cluster import KMeans
 from skimage.color import deltaE_ciede2000, rgb2lab
 
 
-DATA_PATH = Path(__file__).parent / "data"
+DATA_PATH = Path(__file__).parent.parent / "data"
+logger = logging.getLogger(__name__)
 
 
 @lru_cache
@@ -50,6 +52,7 @@ def get_fpc_data(user_id: int) -> dict:
         },
     )
     data = r.json()
+    logger.info("Got user data. user_id=%s user_name=%s", user_id, data["data"]["attributes"]["name"])
     return data
 
 

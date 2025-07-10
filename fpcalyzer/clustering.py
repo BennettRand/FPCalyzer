@@ -10,13 +10,13 @@ from sklearn.cluster import (
 from skimage.color import lab2lch, deltaE_ciede2000
 from sklearn.metrics import pairwise_distances, silhouette_score
 
-from fpcalyzer.color_util import (
+from fpcalyzer.util.color_util import (
     clustering_score_lab_max,
     find_closest_names,
     get_named_colors,
 )
 
-from .color_util import delta_e_wrap
+from .util.color_util import delta_e_wrap
 
 
 def kmeans(
@@ -32,7 +32,7 @@ def kmeans(
     if delta_e_max is None:
         delta_e_max = 25.0
 
-    print("kmeans", clusters, max_clusters, delta_e_max, random_state)
+    # print("kmeans", clusters, max_clusters, delta_e_max, random_state)
 
     cluster_range = range(1, int(max_clusters) + 1)
     if clusters is not None:
@@ -54,7 +54,7 @@ def kmeans(
         if score < lowest:
             lowest = score
             lowest_labels = clustering.labels_
-        print(f"n_clusters={n_c}, mean ΔE00={score:.2f}")
+        # print(f"n_clusters={n_c}, mean ΔE00={score:.2f}")
         if score < float(delta_e_max):
             break
 
@@ -82,7 +82,7 @@ def hdbscan(inks_df: pd.DataFrame, min_size=None, max_size=None):
     max_size = int(max_size)
     min_size = int(min_size)
 
-    print("hdbscan", min_size, max_size)
+    # print("hdbscan", min_size, max_size)
 
     lab = inks_df[["L", "a", "b"]].values
     colors = get_named_colors()
@@ -99,7 +99,7 @@ def hdbscan(inks_df: pd.DataFrame, min_size=None, max_size=None):
     inks_df["cluster"] = clustering.labels_
 
     categories = inks_df[["L", "a", "b", "cluster"]].groupby(["cluster"]).mean()
-    print("UNCLASSIFIED", len(inks_df[inks_df["cluster"] == -1]))
+    # print("UNCLASSIFIED", len(inks_df[inks_df["cluster"] == -1]))
     categories = categories[categories.index != -1]
     categories[["L_", "C_", "H_"]] = lab2lch(categories[["L", "a", "b"]].values)
     categories = categories.sort_values("H_")
@@ -122,7 +122,7 @@ def dbscan(inks_df: pd.DataFrame, delta_e_sim=None, min_size=None):
     delta_e_sim = float(delta_e_sim)
     min_size = int(min_size)
 
-    print("dbscan", delta_e_sim, min_size)
+    # print("dbscan", delta_e_sim, min_size)
 
     lab = inks_df[["L", "a", "b"]].values
     colors = get_named_colors()
@@ -137,7 +137,7 @@ def dbscan(inks_df: pd.DataFrame, delta_e_sim=None, min_size=None):
     inks_df["cluster"] = clustering.labels_
 
     categories = inks_df[["L", "a", "b", "cluster"]].groupby(["cluster"]).mean()
-    print("UNCLASSIFIED", len(inks_df[inks_df["cluster"] == -1]))
+    # print("UNCLASSIFIED", len(inks_df[inks_df["cluster"] == -1]))
     categories = categories[categories.index != -1]
     categories[["L_", "C_", "H_"]] = lab2lch(categories[["L", "a", "b"]].values)
     categories = categories.sort_values("H_")
@@ -174,7 +174,7 @@ def spectral(
     score_max = float(score_max)
     sigma = float(sigma)
 
-    print("spectral", clusters, max_clusters, score_max, random_state)
+    # print("spectral", clusters, max_clusters, score_max, random_state)
 
     cluster_range = range(2, int(max_clusters) + 1)
     if clusters is not None:
@@ -203,7 +203,7 @@ def spectral(
         if score < lowest:
             lowest = score
             lowest_labels = clustering.labels_
-        print(f"n_clusters={n_c}, score={score:.2f}")
+        # print(f"n_clusters={n_c}, score={score:.2f}")
         if score < float(score_max):
             break
 
@@ -234,7 +234,7 @@ def glom(
     if score_max is None:
         score_max = 0.15
 
-    print("agglomerative", clusters, max_clusters, score_max, random_state)
+    # print("agglomerative", clusters, max_clusters, score_max, random_state)
 
     cluster_range = range(2, int(max_clusters) + 1)
     if clusters is not None:
@@ -257,7 +257,7 @@ def glom(
         if score < lowest:
             lowest = score
             lowest_labels = clustering.labels_
-        print(f"n_clusters={n_c}, score={score:.2f}")
+        # print(f"n_clusters={n_c}, score={score:.2f}")
         if score < float(score_max):
             break
 
